@@ -155,7 +155,7 @@
                 "serverFarmId": "[variables('hostingPlanName')]",
                 "hostingEnvironment": "",
                 "siteConfig": {
-                    //"linuxFxVersion": "DOCKER",
+                    "linuxFxVersion": "DOCKER",
                     "DOCKER_CUSTOM_IMAGE_NAME": "containerwebapp"
                 }
             },
@@ -173,6 +173,7 @@
                     ],
                     "properties": {
                         "siteConfig": {
+                            "linuxFxVersion": "DOCKER",
                             "DOCKER_CUSTOM_IMAGE_NAME": "containerwebapp"
                         }
             },
