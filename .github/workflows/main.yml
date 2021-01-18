@@ -96,3 +96,101 @@ jobs:
         with:
           inlineScript: |
             az webapp deployment slot swap -g ${{ env.resourcegroup }} -n ${{ steps.deploy_site.outputs.webappname }} --slot staging --target-slot production
+
+  deploy-test:
+    runs-on: ubuntu-latest
+    environment:
+      name: Test
+      url: https://${{ steps.deploy_site.outputs.webAppName }}.azurewebsites.net
+    needs: deploy-dev
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Download armtemplate
+        uses: actions/download-artifact@v2
+        with:
+          name: armtemplate
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Run ARM deploy
+        uses: azure/arm-deploy@v1
+        id: deploy_site
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          resourceGroupName: ${{ env.resourcegroup }}
+          template: ./azuredeploy.json
+          parameters: 
+            environment=dev
+            administratorLogin=MySuperAdmin
+            administratorLoginPassword=${{ secrets.DBPASSWORD }}
+
+      - name: Deploy webapp to staging slot
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp config container set \
+                        --resource-group ${{ env.resourcegroup }} \
+                        --name ${{ steps.deploy_site.outputs.webAppName }} \
+                        --docker-custom-image-name ${{ env.imagename }}:${{ github.sha }} \
+                        --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }} \
+                        --docker-registry-server-url https://${{ env.containerregistry }} \
+                        --docker-registry-server-user ${{ env.registryusername }} \
+                        --slot staging
+
+      - name: Swap slots for webapp
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp deployment slot swap -g ${{ env.resourcegroup }} -n ${{ steps.deploy_site.outputs.webappname }} --slot staging --target-slot production
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    environment:
+      name: Production
+      url: https://${{ steps.deploy_site.outputs.webAppName }}.azurewebsites.net
+    needs: deploy-test
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Download armtemplate
+        uses: actions/download-artifact@v2
+        with:
+          name: armtemplate
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Run ARM deploy
+        uses: azure/arm-deploy@v1
+        id: deploy_site
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          resourceGroupName: ${{ env.resourcegroup }}
+          template: ./azuredeploy.json
+          parameters: 
+            environment=dev
+            administratorLogin=MySuperAdmin
+            administratorLoginPassword=${{ secrets.DBPASSWORD }}
+
+      - name: Deploy webapp to staging slot
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp config container set \
+                        --resource-group ${{ env.resourcegroup }} \
+                        --name ${{ steps.deploy_site.outputs.webAppName }} \
+                        --docker-custom-image-name ${{ env.imagename }}:${{ github.sha }} \
+                        --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }} \
+                        --docker-registry-server-url https://${{ env.containerregistry }} \
+                        --docker-registry-server-user ${{ env.registryusername }} \
+                        --slot staging
+
+      - name: Swap slots for webapp
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp deployment slot swap -g ${{ env.resourcegroup }} -n ${{ steps.deploy_site.outputs.webappname }} --slot staging --target-slot production
