@@ -20,9 +20,9 @@
                 "description": "Name of azure web app"
             }
         },
-        "linuxFxVersion": {
-            "type": "string"
-        },
+        // "linuxFxVersion": {
+        //     "type": "string"
+        // },
         "dockerRegistryUrl": {
             "type": "string"
         },
