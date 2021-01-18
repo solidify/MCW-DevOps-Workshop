@@ -20,21 +20,6 @@
                 "description": "Name of azure web app"
             }
         },
-        // "linuxFxVersion": {
-        //     "type": "string"
-        // },
-        "dockerRegistryUrl": {
-            "type": "string"
-        },
-        "dockerRegistryUsername": {
-            "type": "string"
-        },
-        "dockerRegistryPassword": {
-            "type": "securestring"
-        },
-        // "dockerRegistryStartupCommand": {
-        //     "type": "string"
-        // },
         "administratorLogin": {
             "type": "string",
             "minLength": 1,
@@ -139,16 +124,16 @@
     },
     "resources": [
         {
-            "apiVersion": "2015-08-01",
+            "apiVersion": "2016-09-01",
             "name": "[variables('hostingPlanName')]",
             "type": "Microsoft.Web/serverfarms",
             "location": "[parameters('location')]",
             "kind":  "linux",
             "properties": {
                 "name": "[variables('hostingPlanName')]",
-                // "workerSize": "1",
-                // "hostingEnvironment": "",
-                // "numberOfWorkers": 0,
+                "workerSize": "1",
+                "hostingEnvironment": "",
+                "numberOfWorkers": 0,
                 "reserved": true
             },
             "sku": {
@@ -157,7 +142,7 @@
             }
         },
         {
-            "apiVersion": "2015-08-01",
+            "apiVersion": "2018-11-01",
             "name": "[variables('webAppName')]",
             "type": "Microsoft.Web/sites",
             "location": "[parameters('location')]",
@@ -168,29 +153,7 @@
             "properties": {
                 "name": "[variables('webAppName')]",
                 "serverFarmId": "[variables('hostingPlanName')]",
-                //"hostingEnvironment": "",
-                "siteConfig": {
-                    // "appSettings": [
-                    //     {
-                    //         "name": "DOCKER_REGISTRY_SERVER_URL",
-                    //         "value": "[parameters('dockerRegistryUrl')]"
-                    //     },
-                    //     {
-                    //         "name": "DOCKER_REGISTRY_SERVER_USERNAME",
-                    //         "value": "[parameters('dockerRegistryUsername')]"
-                    //     },
-                    //     {
-                    //         "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
-                    //         "value": "[parameters('dockerRegistryPassword')]"
-                    //     },
-                    //     {
-                    //         "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
-                    //         "value": "false"
-                    //     }
-                    // ],
-                    //"linuxFxVersion": "DOCKER" //"[parameters('linuxFxVersion')]"
-                    "DOCKER_CUSTOM_IMAGE_NAME": "containerwebapp"
-                }
+                "hostingEnvironment": ""
             },
             "resources": [
                 {
@@ -204,120 +167,94 @@
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/Sites/', variables('webAppName'))]"
                     ],
-                    "properties": {
-                        "siteConfig": {
-                            // "appSettings": [
-                            //     {
-                            //         "name": "DOCKER_REGISTRY_SERVER_URL",
-                            //         "value": "[parameters('dockerRegistryUrl')]"
-                            //     },
-                            //     {
-                            //         "name": "DOCKER_REGISTRY_SERVER_USERNAME",
-                            //         "value": "[parameters('dockerRegistryUsername')]"
-                            //     },
-                            //     {
-                            //         "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
-                            //         "value": "[parameters('dockerRegistryPassword')]"
-                            //     },
-                            //     {
-                            //         "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
-                            //         "value": "false"
-                            //     }
-                            // ],
-                        //"linuxFxVersion": "DOCKER" // "[parameters('linuxFxVersion')]"
-                        "DOCKER_CUSTOM_IMAGE_NAME": "containerwebapp"
-                        //"appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
-                        //"alwaysOn": "[parameters('alwaysOn')]"
-                        }
-                    },
+                    "properties": {},
                     "resources": []
+                },
+                {
+                    "apiVersion": "2016-08-01",
+                    "name": "connectionstrings",
+                    "type": "config",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', variables('webAppName'))]"
+                    ],
+                    "properties": {
+                        "defaultConnection": {
+                            "value": "[concat('Database=', variables('databaseName'), ';Server=', reference(resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))).fullyQualifiedDomainName, ';User Id=', parameters('administratorLogin'),'@', variables('serverName'),';Password=', parameters('administratorLoginPassword'))]",
+                            "type": "PostgreSQL"
+                        }
+                    }
+                },
+                {
+                    "type": "Microsoft.Web/sites/config",
+                    "apiVersion": "2018-11-01",
+                    "name": "[concat(variables('webAppName'), '/web')]",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('webAppName'))]"
+                    ],
+                    "properties": {
+                        "numberOfWorkers": 1,
+                        "defaultDocuments": [
+                            "Default.htm",
+                            "Default.html",
+                            "Default.asp",
+                            "index.htm",
+                            "index.html",
+                            "iisstart.htm",
+                            "default.aspx",
+                            "index.php",
+                            "hostingstart.html"
+                        ]
+                    }
                 }
-                // {
-                //     "apiVersion": "2016-08-01",
-                //     "name": "connectionstrings",
-                //     "type": "config",
-                //     "dependsOn": [
-                //         "[concat('Microsoft.Web/sites/', variables('webAppName'))]"
-                //     ],
-                //     "properties": {
-                //         "defaultConnection": {
-                //             "value": "[concat('Database=', variables('databaseName'), ';Server=', reference(resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))).fullyQualifiedDomainName, ';User Id=', parameters('administratorLogin'),'@', variables('serverName'),';Password=', parameters('administratorLoginPassword'))]",
-                //             "type": "PostgreSQL"
-                //         }
-                //     }
-                // },
-                // {
-                //     "type": "Microsoft.Web/sites/config",
-                //     "apiVersion": "2018-11-01",
-                //     "name": "[concat(variables('webAppName'), '/web')]",
-                //     "location": "[parameters('location')]",
-                //     "dependsOn": [
-                //         "[resourceId('Microsoft.Web/sites', variables('webAppName'))]"
-                //     ],
-                //     "properties": {
-                //         "numberOfWorkers": 1,
-                //         "defaultDocuments": [
-                //             "Default.htm",
-                //             "Default.html",
-                //             "Default.asp",
-                //             "index.htm",
-                //             "index.html",
-                //             "iisstart.htm",
-                //             "default.aspx",
-                //             "index.php",
-                //             "hostingstart.html"
-                //         ]
-                //     }
-                // }
+            ]
+        },
+        {
+            "apiVersion": "2017-12-01",
+            "type": "Microsoft.DBforPostgreSQL/servers",
+            "location": "[parameters('location')]",
+            "name": "[variables('serverName')]",
+            "sku": {
+                "name": "[parameters('databaseSkuName')]",
+                "tier": "[parameters('databaseSkuTier')]",
+                "capacity": "[parameters('databaseSkucapacity')]",
+                "size": "[parameters('databaseSkuSizeMB')]",
+                "family": "[parameters('databaseskuFamily')]"
+            },
+            "properties": {
+                "version": "[parameters('postgresqlVersion')]",
+                "administratorLogin": "[parameters('administratorLogin')]",
+                "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
+                "storageMB": "[parameters('databaseSkuSizeMB')]"
+            },
+            "resources": [
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "2017-12-01",
+                    "dependsOn": [
+                        "[concat('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))]"
+                    ],
+                    "location": "[parameters('location')]",
+                    "name": "[concat(variables('serverName'),'firewall')]",
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "255.255.255.255"
+                    }
+                },
+                {
+                    "name": "[variables('databaseName')]",
+                    "type": "databases",
+                    "apiVersion": "2017-12-01",
+                    "properties": {
+                        "charset": "utf8",
+                        "collation": "English_United States.1252"
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))]"
+                    ]
+                }
             ]
         }
-        
-        // {
-        //     "apiVersion": "2017-12-01",
-        //     "type": "Microsoft.DBforPostgreSQL/servers",
-        //     "location": "[parameters('location')]",
-        //     "name": "[variables('serverName')]",
-        //     "sku": {
-        //         "name": "[parameters('databaseSkuName')]",
-        //         "tier": "[parameters('databaseSkuTier')]",
-        //         "capacity": "[parameters('databaseSkucapacity')]",
-        //         "size": "[parameters('databaseSkuSizeMB')]",
-        //         "family": "[parameters('databaseskuFamily')]"
-        //     },
-        //     "properties": {
-        //         "version": "[parameters('postgresqlVersion')]",
-        //         "administratorLogin": "[parameters('administratorLogin')]",
-        //         "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
-        //         "storageMB": "[parameters('databaseSkuSizeMB')]"
-        //     },
-        //     "resources": [
-        //         {
-        //             "type": "firewallRules",
-        //             "apiVersion": "2017-12-01",
-        //             "dependsOn": [
-        //                 "[concat('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))]"
-        //             ],
-        //             "location": "[parameters('location')]",
-        //             "name": "[concat(variables('serverName'),'firewall')]",
-        //             "properties": {
-        //                 "startIpAddress": "0.0.0.0",
-        //                 "endIpAddress": "255.255.255.255"
-        //             }
-        //         },
-        //         {
-        //             "name": "[variables('databaseName')]",
-        //             "type": "databases",
-        //             "apiVersion": "2017-12-01",
-        //             "properties": {
-        //                 "charset": "utf8",
-        //                 "collation": "English_United States.1252"
-        //             },
-        //             "dependsOn": [
-        //                 "[concat('Microsoft.DBforPostgreSQL/servers/', variables('serverName'))]"
-        //             ]
-        //         }
-        //     ]
-        //}
     ],
     "outputs": {
     "webappname": {

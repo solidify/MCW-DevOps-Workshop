@@ -77,82 +77,19 @@ jobs:
             environment=dev
             administratorLogin=MySuperAdmin
             administratorLoginPassword=${{ secrets.DBPASSWORD }}
-            dockerRegistryUrl=https://${{ env.containerregistry }}
-            dockerRegistryUsername=${{ secrets.REGISTRY_USERNAME  }}
-            dockerRegistryPassword=${{ secrets.REGISTRY_PASSWORD }}
-     
-      # - name: Deploy ARM template
-      #   id: deploy_site
-      #   run: |
-      #     $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=dev --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
-      #     $armOutputObj = $output | ConvertFrom-Json
-      #     $webAppName = $armOutputObj.properties.outputs.webappname.value
-      #     echo "::set-output name=webAppName::$webAppName"
-      #   shell: pwsh
 
-      - name: Set Web App ACR authentication
-        uses: Azure/appservice-settings@v1
+      - name: Deploy webapp to staging slot
+        uses: azure/CLI@v1
         with:
-          app-name: ${{ steps.deploy_site.outputs.webappname }}
-          slot-name: 'staging'
-          app-settings-json: |
-            [
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_URL",
-                    "value": "https://${{ env.containerregistry }}",
-                    "slotSetting": false
-                },
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
-                    "value": "${{ secrets.REGISTRY_PASSWORD }}",
-                    "slotSetting": false
-                },
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_USERNAME",
-                    "value": "${{ secrets.REGISTRY_USERNAME  }}",
-                    "slotSetting": false
-                }
-            ]
-      
-      - name: Set Web App ACR authentication
-        uses: Azure/appservice-settings@v1
-        with:
-          app-name: ${{ steps.deploy_site.outputs.webappname }}
-          app-settings-json: |
-            [
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_URL",
-                    "value": "https://${{ env.containerregistry }}",
-                    "slotSetting": false
-                },
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
-                    "value": "${{ secrets.REGISTRY_PASSWORD }}",
-                    "slotSetting": false
-                },
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_USERNAME",
-                    "value": "${{ secrets.REGISTRY_USERNAME  }}",
-                    "slotSetting": false
-                }
-            ]
-      - uses: azure/webapps-deploy@v2
-        with:
-          app-name: '${{ steps.deploy_site.outputs.webappname }}'
-          images: '${{ env.imagename }}:${{ github.sha }}'
-          slot-name: staging
-      # - name: Deploy webapp to staging slot
-      #   uses: azure/CLI@v1
-      #   with:
-      #     inlineScript: |
-      #       az webapp config container set \
-      #                   --resource-group ${{ env.resourcegroup }} \
-      #                   --name ${{ steps.deploy_site.outputs.webAppName }} \
-      #                   --docker-custom-image-name ${{ env.imagename }}:${{ github.sha }} \
-      #                   --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }} \
-      #                   --docker-registry-server-url https://${{ env.containerregistry }} \
-      #                   --docker-registry-server-user ${{ env.registryusername }} \
-      #                   --slot staging
+          inlineScript: |
+            az webapp config container set \
+                        --resource-group ${{ env.resourcegroup }} \
+                        --name ${{ steps.deploy_site.outputs.webAppName }} \
+                        --docker-custom-image-name ${{ env.imagename }}:${{ github.sha }} \
+                        --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }} \
+                        --docker-registry-server-url https://${{ env.containerregistry }} \
+                        --docker-registry-server-user ${{ env.registryusername }} \
+                        --slot staging
 
       - name: Swap slots for webapp
         uses: azure/CLI@v1
