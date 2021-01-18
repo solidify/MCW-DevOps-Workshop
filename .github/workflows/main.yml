@@ -54,6 +54,7 @@ jobs:
       name: Development
       url: https://${{ steps.deploy_site.outputs.webAppName }}.azurewebsites.net
     needs: build
+    if: github.ref == 'ref/head/master'
     steps:
       - name: Download armtemplate
         uses: actions/download-artifact@v2
