@@ -94,12 +94,36 @@ jobs:
         uses: Azure/appservice-settings@v1
         with:
           app-name: ${{ steps.deploy_site.outputs.webappname }}
+          slot-name: 'staging'
           app-settings-json: |
             [
                 {
                     "name": "DOCKER_REGISTRY_SERVER_URL",
                     "value": "https://${{ env.containerregistry }}",
+                    "slotSetting": false,
+                },
+                {
+                    "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+                    "value": "${{ secrets.REGISTRY_PASSWORD }}",
                     "slotSetting": false
+                },
+                {
+                    "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+                    "value": "${{ secrets.REGISTRY_USERNAME  }}",
+                    "slotSetting": false
+                }
+            ]
+      
+      - name: Set Web App ACR authentication
+        uses: Azure/appservice-settings@v1
+        with:
+          app-name: ${{ steps.deploy_site.outputs.webappname }}
+          app-settings-json: |
+            [
+                {
+                    "name": "DOCKER_REGISTRY_SERVER_URL",
+                    "value": "https://${{ env.containerregistry }}",
+                    "slotSetting": false,
                 },
                 {
                     "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
