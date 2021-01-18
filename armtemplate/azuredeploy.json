@@ -171,7 +171,11 @@
                     "dependsOn": [
                         "[resourceId('Microsoft.Web/Sites/', variables('webAppName'))]"
                     ],
-                    "properties": {},
+                    "properties": {
+                        "siteConfig": {
+                            "DOCKER_CUSTOM_IMAGE_NAME": "containerwebapp"
+                        }
+            },
                     "resources": []
                 },
                 // {
