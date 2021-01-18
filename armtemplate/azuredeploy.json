@@ -170,20 +170,20 @@
                     "properties": {},
                     "resources": []
                 },
-                {
-                    "apiVersion": "2016-08-01",
-                    "name": "connectionstrings",
-                    "type": "config",
-                    "dependsOn": [
-                        "[concat('Microsoft.Web/sites/', variables('webAppName'))]"
-                    ]
-                    // "properties": {
-                    //     "defaultConnection": {
-                    //         "value": "[concat('Database=', variables('databaseName'), ';Server=', reference(resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))).fullyQualifiedDomainName, ';User Id=', parameters('administratorLogin'),'@', variables('serverName'),';Password=', parameters('administratorLoginPassword'))]",
-                    //         "type": "PostgreSQL"
-                    //     }
-                    // }
-                },
+                // {
+                //     "apiVersion": "2016-08-01",
+                //     "name": "connectionstrings",
+                //     "type": "config",
+                //     "dependsOn": [
+                //         "[concat('Microsoft.Web/sites/', variables('webAppName'))]"
+                //     ],
+                //     "properties": {
+                //         "defaultConnection": {
+                //             "value": "[concat('Database=', variables('databaseName'), ';Server=', reference(resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))).fullyQualifiedDomainName, ';User Id=', parameters('administratorLogin'),'@', variables('serverName'),';Password=', parameters('administratorLoginPassword'))]",
+                //             "type": "PostgreSQL"
+                //         }
+                //     }
+                // },
                 {
                     "type": "Microsoft.Web/sites/config",
                     "apiVersion": "2018-11-01",
@@ -209,6 +209,7 @@
                 }
             ]
         }
+        
         // {
         //     "apiVersion": "2017-12-01",
         //     "type": "Microsoft.DBforPostgreSQL/servers",
