@@ -188,7 +188,7 @@
                     //         "value": "false"
                     //     }
                     // ],
-                    "linuxFxVersion": "DOCKER", //"[parameters('linuxFxVersion')]"
+                    //"linuxFxVersion": "DOCKER", //"[parameters('linuxFxVersion')]"
                     "DOCKER_CUSTOM_IMAGE_NAME": "containerwebapp"
                 }
             },
@@ -224,7 +224,7 @@
                             //         "value": "false"
                             //     }
                             // ],
-                        "linuxFxVersion": "DOCKER", // "[parameters('linuxFxVersion')]"
+                        //"linuxFxVersion": "DOCKER", // "[parameters('linuxFxVersion')]"
                         "DOCKER_CUSTOM_IMAGE_NAME": "containerwebapp"
                         //"appCommandLine": "[parameters('dockerRegistryStartupCommand')]",
                         //"alwaysOn": "[parameters('alwaysOn')]"
