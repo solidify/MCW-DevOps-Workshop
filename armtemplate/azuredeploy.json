@@ -139,16 +139,16 @@
     },
     "resources": [
         {
-            "apiVersion": "2016-09-01",
+            "apiVersion": "2015-08-01",
             "name": "[variables('hostingPlanName')]",
             "type": "Microsoft.Web/serverfarms",
             "location": "[parameters('location')]",
             "kind":  "linux",
             "properties": {
                 "name": "[variables('hostingPlanName')]",
-                "workerSize": "1",
-                "hostingEnvironment": "",
-                "numberOfWorkers": 0,
+                // "workerSize": "1",
+                // "hostingEnvironment": "",
+                // "numberOfWorkers": 0,
                 "reserved": true
             },
             "sku": {
@@ -157,7 +157,7 @@
             }
         },
         {
-            "apiVersion": "2018-11-01",
+            "apiVersion": "2015-08-01",
             "name": "[variables('webAppName')]",
             "type": "Microsoft.Web/sites",
             "location": "[parameters('location')]",
@@ -168,7 +168,7 @@
             "properties": {
                 "name": "[variables('webAppName')]",
                 "serverFarmId": "[variables('hostingPlanName')]",
-                "hostingEnvironment": "",
+                //"hostingEnvironment": "",
                 "siteConfig": {
                     // "appSettings": [
                     //     {
