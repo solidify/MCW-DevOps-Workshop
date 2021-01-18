@@ -65,19 +65,31 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy ARM template
+      - name: Run ARM deploy
+        uses: azure/arm-deploy@v1
         id: deploy_site
-        run: |
-          $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=dev --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
-          $armOutputObj = $output | ConvertFrom-Json
-          $webAppName = $armOutputObj.properties.outputs.webappname.value
-          echo "::set-output name=webAppName::$webAppName"
-        shell: pwsh
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTIONID }}
+          resourceGroupName: ${{ env.resourcegroup }}
+          template: ./azuredeploy.json
+          parameters: 
+            environment=dev
+            administratorLogin=MySuperAdmin
+            administratorLoginPassword=${{ secrets.DBPASSWORD }}
+     
+      # - name: Deploy ARM template
+      #   id: deploy_site
+      #   run: |
+      #     $output = az deployment group create --resource-group ${{ env.resourcegroup }} --template-file azuredeploy.json --parameters environment=dev --parameters administratorLogin=JallaJalla --parameters administratorLoginPassword=${{ secrets.DBPASSWORD }}
+      #     $armOutputObj = $output | ConvertFrom-Json
+      #     $webAppName = $armOutputObj.properties.outputs.webappname.value
+      #     echo "::set-output name=webAppName::$webAppName"
+      #   shell: pwsh
 
       - name: Set Web App ACR authentication
         uses: Azure/appservice-settings@v1
         with:
-          app-name: ${{ steps.deploy_site.outputs.webAppName }}
+          app-name: ${{ steps.deploy_site.outputs.webappname }}
           app-settings-json: |
             [
                 {
@@ -98,7 +110,7 @@ jobs:
             ]
       - uses: azure/webapps-deploy@v2
         with:
-          app-name: '${{ steps.deploy_site.outputs.webAppName }}'
+          app-name: '${{ steps.deploy_site.outputs.webappname }}'
           images: '${{ env.imagename }}:${{ github.sha }}'
       # - name: Deploy webapp to staging slot
       #   uses: azure/CLI@v1
@@ -117,4 +129,4 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az webapp deployment slot swap -g ${{ env.resourcegroup }} -n ${{ steps.deploy_site.outputs.webAppName }} --slot staging --target-slot production
+            az webapp deployment slot swap -g ${{ env.resourcegroup }} -n ${{ steps.deploy_site.outputs.webappname }} --slot staging --target-slot production
