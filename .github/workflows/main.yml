@@ -77,6 +77,9 @@ jobs:
             environment=dev
             administratorLogin=MySuperAdmin
             administratorLoginPassword=${{ secrets.DBPASSWORD }}
+            dockerRegistryUrl=https://${{ env.containerregistry }}
+            dockerRegistryUsername=${{ secrets.REGISTRY_USERNAME  }}
+            dockerRegistryPassword=${{ secrets.REGISTRY_PASSWORD }}
      
       # - name: Deploy ARM template
       #   id: deploy_site
@@ -87,28 +90,28 @@ jobs:
       #     echo "::set-output name=webAppName::$webAppName"
       #   shell: pwsh
 
-      - name: Set Web App ACR authentication
-        uses: Azure/appservice-settings@v1
-        with:
-          app-name: ${{ steps.deploy_site.outputs.webappname }}
-          app-settings-json: |
-            [
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_URL",
-                    "value": "https://${{ env.containerregistry }}",
-                    "slotSetting": false
-                },
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
-                    "value": "${{ secrets.REGISTRY_PASSWORD }}",
-                    "slotSetting": false
-                },
-                {
-                    "name": "DOCKER_REGISTRY_SERVER_USERNAME",
-                    "value": "${{ secrets.REGISTRY_USERNAME  }}",
-                    "slotSetting": false
-                }
-            ]
+      # - name: Set Web App ACR authentication
+      #   uses: Azure/appservice-settings@v1
+      #   with:
+      #     app-name: ${{ steps.deploy_site.outputs.webappname }}
+      #     app-settings-json: |
+      #       [
+      #           {
+      #               "name": "DOCKER_REGISTRY_SERVER_URL",
+      #               "value": "https://${{ env.containerregistry }}",
+      #               "slotSetting": false
+      #           },
+      #           {
+      #               "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+      #               "value": "${{ secrets.REGISTRY_PASSWORD }}",
+      #               "slotSetting": false
+      #           },
+      #           {
+      #               "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+      #               "value": "${{ secrets.REGISTRY_USERNAME  }}",
+      #               "slotSetting": false
+      #           }
+      #       ]
       - uses: azure/webapps-deploy@v2
         with:
           app-name: '${{ steps.deploy_site.outputs.webappname }}'
